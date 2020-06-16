@@ -1,12 +1,15 @@
 # Welcome to serverless. Read the docs
 # https://serverless.com/framework/docs/
 
-service: fargate-dns-demo
+org: ckendellen
+app: hi-ns-dns-update
+
+service: NetworkServices-dns-update
 
 provider:
   name: aws
   runtime: nodejs12.x
-  region: eu-central-1
+  region: eu-west-1
   iamRoleStatements:
     - Effect: "Allow"
       Action:

@@ -7,7 +7,7 @@ const ecs = new AWS.ECS();
 const route53 = new AWS.Route53();
 
 /**
- * Upsert a public ip DNS record for the incoming task.
+ * Upsert a private ip DNS record for the incoming task.
  *
  * @param event contains the task in the 'detail' propery
  */
@@ -37,9 +37,9 @@ exports.handler = async (event, context, callback) => {
         return;
     }
 
-    const taskPublicIp = await fetchEniPublicIp(eniId)
+    const taskPublicIp = await fetchEniPrivateIp(eniId)
     const serviceName = task.group.split(":")[1]
-    console.log(`task:${serviceName} public-id: ${taskPublicIp}`)
+    console.log(`task:${serviceName} private-id: ${taskPublicIp}`)
 
     const containerDomain = `${serviceName}.${domain}`
     const recordSet = createRecordSet(containerDomain, taskPublicIp)
@@ -87,6 +87,16 @@ async function fetchEniPublicIp(eniId) {
     }).promise();
 
     return data.NetworkInterfaces[0].PrivateIpAddresses[0].Association.PublicIp;
+}
+
+async function fetchEniPrivateIp(eniId) {
+    const data = await ec2.describeNetworkInterfaces({
+        NetworkInterfaceIds: [
+            eniId
+        ]
+    }).promise();
+
+    return data.NetworkInterfaces[0].PrivateIpAddress;
 }
 
 function createRecordSet(domain, publicIp) {
